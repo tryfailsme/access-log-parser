@@ -1,0 +1,4 @@
+# Access-log-parser ignored files
+.idea/
+out/
+*.iml
