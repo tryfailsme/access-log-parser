@@ -1,4 +1,7 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.Scanner;
 
 public class Main {
@@ -21,6 +24,34 @@ public class Main {
                 System.out.println("Путь указан верно.");
                 System.out.println("Это файл номер: " + n);
             }
+            int counter = 0;
+            int minl = 0;
+            int maxl = 0;
+            try {
+                FileReader fileReader = new FileReader(path);
+                BufferedReader reader = new BufferedReader(fileReader);
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    int length = line.length();
+                    if (length > 1024)
+                        throw new TooLongLineException("В файле встретилась строка длиннее 1024 символов");
+                    if (maxl == minl || length <= minl) minl = length;
+                    if (length >= maxl) maxl = length;
+                    counter++;
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                System.out.println("Общее количество строк в файле:" + counter);
+                System.out.println("Длина самой длинной строки в файле:" + maxl);
+                System.out.println("Длина самой короткой строки в файле:" + minl);
+            }
+        }
+    }
+
+    public static class TooLongLineException extends Exception {
+        public TooLongLineException(String message) {
+            super(message);
         }
     }
 }
