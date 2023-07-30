@@ -24,9 +24,8 @@ public class Main {
                 System.out.println("Путь указан верно.");
                 System.out.println("Это файл номер: " + n);
             }
-            int counter = 0;
-            int minl = 0;
-            int maxl = 0;
+            int yandexBot = 0, googleBot = 0, maxl = 0, minl = 0, counter = 0;
+            String resultString = null;
             try {
                 FileReader fileReader = new FileReader(path);
                 BufferedReader reader = new BufferedReader(fileReader);
@@ -38,13 +37,44 @@ public class Main {
                     if (maxl == minl || length <= minl) minl = length;
                     if (length >= maxl) maxl = length;
                     counter++;
+
+//                  Получаю User-Agent
+                    resultString = line.substring(line.lastIndexOf("\" \"") + 3, line.lastIndexOf('"'));
+                    System.out.println(resultString);
+
+//                  Пройти шаги из задания отделения части бота не представляется возможным, так как
+//                  1) Бот может быть указан не в первых скобках
+//                  2) Бот после использования split может быть в 2й и 3й позиции
+//                  3) Некоторые боты не имеют слэшей.
+//                  В следствии чего, дабы сохранить минимально совпадение по описываемым шагам, я на раннем этапе решил отсеить ненужные записи.
+                    if (resultString.contains("YandexBot") || resultString.contains("Googlebot")) {
+
+//                      Выделите часть, которая находится в первых скобках (боты не всгда в первых скобках, поэтому выделяю через модификатор)
+                        resultString = resultString.substring(resultString.lastIndexOf("compatible;") + 1, resultString.lastIndexOf(')'));
+
+//                      Разделяю эту часть по точке с запятой
+                        String[] botParts = resultString.split(";");
+
+//                      Очистьте от пробелов каждый получившийся фрагмент;
+//                      Возьмите второй фрагмент;
+//                      Отделите в этом фрагменте часть до слэша.
+                        resultString = botParts[1].substring(1, botParts[1].lastIndexOf('/'));
+                        switch (resultString) {
+                            case "YandexBot":
+                                yandexBot++;
+                                break;
+                            case "Googlebot":
+                                googleBot++;
+                                break;
+                        }
+                    }
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
             } finally {
                 System.out.println("Общее количество строк в файле:" + counter);
-                System.out.println("Длина самой длинной строки в файле:" + maxl);
-                System.out.println("Длина самой короткой строки в файле:" + minl);
+                System.out.println("YandexBot: " + yandexBot + "/" + counter);
+                System.out.println("GoogleBot: " + googleBot + "/" + counter);
             }
         }
     }
