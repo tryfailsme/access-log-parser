@@ -17,7 +17,7 @@ public class Main {
             boolean fileExists = file.exists();
             boolean isDirectory = file.isDirectory();
             if (!fileExists || isDirectory) {
-                System.out.println("Файл не существует или указанный путь является путём к папке, а не к файлу.");
+                System.out.println("!Файл не существует или указанный путь является путём к папке, а не к файлу.");
                 continue;
             } else {
                 n++;
