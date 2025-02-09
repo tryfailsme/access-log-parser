@@ -23,9 +23,7 @@ public class Main {
                 System.out.println("Путь указан верно.");
                 System.out.println("Это файл номер: " + n);
             }
-            int counter = 0;
-            int minl = 0;
-            int maxl = 0;
+            int yandexBot = 0, googleBot = 0, maxl = 0, minl = 0, counter = 0;
             try {
                 FileReader fileReader = new FileReader(path);
                 BufferedReader reader = new BufferedReader(fileReader);
@@ -37,10 +35,31 @@ public class Main {
                         throw new TooLongLineException("В файле встретилась строка длиннее 1024 символов");
                     if (maxl == minl || length <= minl) minl = length;
                     if (length >= maxl) maxl = length;
+
+//                  Получаю User-Agent
+                    line = line.substring(line.lastIndexOf("\" \"") + 3, line.lastIndexOf('"'));
+//                  Сразу отсеиваю строки без ботов
+                    if (line.contains("YandexBot") || line.contains("Googlebot")) {
+//                      Выделите часть, которая находится в первых скобках (боты не всегда в первых скобках, поэтому выделяю через модификатор)
+                        line = line.substring(line.lastIndexOf("compatible;"), line.lastIndexOf(')'));
+//                      Разделяю эту часть по точке с запятой
+                        String[] botParts = line.split(";");
+//                      Возьмите второй фрагмент;
+//                      Отделите в этом фрагменте часть до слэша.
+                        line = botParts[1].substring(1, botParts[1].lastIndexOf('/'));
+                        switch (line) {
+                            case "YandexBot":
+                                yandexBot++;
+                                break;
+                            case "Googlebot":
+                                googleBot++;
+                                break;
+                        }
+                    }
                 }
                 System.out.println("Общее количество строк в файле:" + counter);
-                System.out.println("Длина самой длинной строки в файле:" + maxl);
-                System.out.println("Длина самой короткой строки в файле:" + minl);
+                System.out.println("YandexBot: " + yandexBot + "/" + counter);
+                System.out.println("GoogleBot: " + googleBot + "/" + counter);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
