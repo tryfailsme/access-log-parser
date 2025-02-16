@@ -2,10 +2,12 @@ package ru.LogEntry;
 
 public class UserAgent {
     private final String operatingSystem, browser;
+    private final boolean bot;
 
     public UserAgent(String userAgent) {
         this.operatingSystem = determineOperatingSystem(userAgent);
         this.browser = determineBrowser(userAgent);
+        this.bot = userAgent.contains("bot");
     }
 
     private String determineOperatingSystem(String userAgent) {
@@ -22,6 +24,9 @@ public class UserAgent {
         else if (userAgent.contains("Firefox")) return "Firefox";
         else if (userAgent.contains("Chrome")) return "Chrome";
         else return "Other";
+    }
+    public boolean isBot() {
+        return bot;
     }
 
     public String getOperatingSystem() {
