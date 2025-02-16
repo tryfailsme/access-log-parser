@@ -9,15 +9,19 @@ import java.util.Set;
 
 public class Statistics {
     private long totalTraffic;
-    private int totalOS;
+    private int entries;
     private LocalDateTime minTime, maxTime;
-    private final HashSet<String> visitedPages = new HashSet<>();
-    private final HashMap<String, Integer> frequencyOS = new HashMap<>();
+    private final HashSet<String> visitedPages, nonExistentPages;
+    private final HashMap<String, Integer> frequencyOS, frequencyBrowsers;
 
     public Statistics() {
         this.totalTraffic = 0L;
         this.minTime = null;
         this.maxTime = null;
+        this.visitedPages = new HashSet<>();
+        this.nonExistentPages = new HashSet<>();
+        this.frequencyOS = new HashMap<>();
+        this.frequencyBrowsers = new HashMap<>();
     }
 
     public void addEntry(LogEntry entry) {
@@ -25,10 +29,14 @@ public class Statistics {
         if (maxTime == null || maxTime.isBefore(entry.getRequestDate())) maxTime = entry.getRequestDate();
         totalTraffic += entry.getSize();
 
+        UserAgent a = entry.getUserAgent();
         if (entry.getResponseCode() == 200) visitedPages.add(entry.getPath());
-        String os = entry.getUserAgent().getOperatingSystem();
-        frequencyOS.put(os, frequencyOS.getOrDefault(os, 0) + 1);
-        totalOS++;
+        else if (entry.getResponseCode() == 404) nonExistentPages.add(entry.getPath());
+
+        frequencyOS.put(a.getOperatingSystem(), frequencyOS.getOrDefault(a.getOperatingSystem(), 0) + 1);
+        frequencyBrowsers.put(a.getBrowser(), frequencyBrowsers.getOrDefault(a.getBrowser(), 0) + 1);
+
+        entries++;
     }
 
     public int getTrafficRate() {
@@ -39,12 +47,24 @@ public class Statistics {
         return new HashSet<>(visitedPages);
     }
 
+    public Set<String> getNonExistentPages() {
+        return new HashSet<>(nonExistentPages);
+    }
+
     public Map<String, Double> getFrequencyOS() {
-        Map<String, Double> percentageOS = new HashMap<>();
-        for (HashMap.Entry<String, Integer> entry : frequencyOS.entrySet()) {
-            double percentage = (double) entry.getValue() / totalOS;
-            percentageOS.put(entry.getKey(), percentage);
+        return frequencyCounter(frequencyOS);
+    }
+
+    public Map<String, Double> getFrequencyBrowsers() {
+        return frequencyCounter(frequencyBrowsers);
+    }
+
+    private Map<String, Double> frequencyCounter(Map<String, Integer> frequency) {
+        Map<String, Double> percentages = new HashMap<>();
+        for (Map.Entry<String, Integer> entry : frequency.entrySet()) {
+            double percentage = (double) entry.getValue() / entries;
+            percentages.put(entry.getKey(), percentage);
         }
-        return percentageOS;
+        return percentages;
     }
 }

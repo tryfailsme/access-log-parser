@@ -18,5 +18,6 @@ public class Start {
         }
         System.out.println("Средний трафик за час: " + stats.getTrafficRate() + " байт/час");
         System.out.println("Статистика операционных систем "+ stats.getFrequencyOS());
+        System.out.println("Статистика браузерных систем "+ stats.getFrequencyBrowsers());
     }
 }
