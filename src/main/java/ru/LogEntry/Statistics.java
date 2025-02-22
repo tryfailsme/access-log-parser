@@ -2,17 +2,18 @@ package ru.LogEntry;
 
 import java.time.LocalDateTime;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Statistics {
     private long totalTraffic;
     private int entries, userVisits, errorsCounter;
     private LocalDateTime minTime, maxTime;
-    private final HashSet<String> visitedPages, nonExistentPages, uniqueUsers;
-    private final HashMap<String, Integer> frequencyOS, frequencyBrowsers;
+    private final HashSet<String> visitedPages, nonExistentPages, referers;
+    private final HashMap<String, Integer> frequencyOS, frequencyBrowsers, uniqueUserVisits;
+    private final HashMap<Long, Integer> perSecVisits;
 
     public Statistics() {
         this.totalTraffic = 0L;
@@ -22,9 +23,11 @@ public class Statistics {
         this.maxTime = null;
         this.visitedPages = new HashSet<>();
         this.nonExistentPages = new HashSet<>();
-        this.uniqueUsers = new HashSet<>();
+        this.referers = new HashSet<>();
         this.frequencyOS = new HashMap<>();
         this.frequencyBrowsers = new HashMap<>();
+        this.perSecVisits = new HashMap<>();
+        this.uniqueUserVisits = new HashMap<>();
     }
 
     public void addEntry(LogEntry entry) {
@@ -46,9 +49,13 @@ public class Statistics {
 
         if (!a.isBot()) {
             userVisits++;
-            uniqueUsers.add(entry.getIp());
+            uniqueUserVisits.merge(entry.getIp(), 1, Integer::sum);
+
+            long epoch = entry.getRequestDate().toEpochSecond(ZoneOffset.UTC);
+            perSecVisits.put(epoch, perSecVisits.getOrDefault(epoch, 0) + 1);
         }
 
+        if (entry.getReferer() != null) referers.add(getDomain(entry.getReferer()));
         entries++;
     }
 
@@ -62,7 +69,7 @@ public class Statistics {
         return (int) (errorsCounter * 60 * 60 / (double) Duration.between(minTime, maxTime).toSeconds());
     }
     public int getAveragePerUser() {
-        return (int) (userVisits / (double) uniqueUsers.size());
+        return (int) (userVisits / (double) uniqueUserVisits.size());
     }
     public Set<String> getAllVisitedPages() {
         return new HashSet<>(visitedPages);
@@ -80,6 +87,18 @@ public class Statistics {
         return frequencyCounter(frequencyBrowsers);
     }
 
+    public Integer getPeakSec() {
+        return perSecVisits.values().stream().max(Integer::compareTo).orElse(0);
+    }
+
+    public Set<String> getReferers() {
+        return new HashSet<>(referers);
+    }
+
+    public Map.Entry<String, Integer> getMaxVisitsUser() {
+        return uniqueUserVisits.entrySet().stream().max(Map.Entry.comparingByValue()).orElse(null);
+    }
+
     private Map<String, Double> frequencyCounter(Map<String, Integer> frequency) {
         Map<String, Double> percentages = new HashMap<>();
         for (Map.Entry<String, Integer> entry : frequency.entrySet()) {
@@ -87,5 +106,14 @@ public class Statistics {
             percentages.put(entry.getKey(), percentage);
         }
         return percentages;
+    }
+
+    private String getDomain(String referer) {
+        Pattern pattern = Pattern.compile("(?:https?:\\/\\/|https%3A%2F%2F)(?:www\\.)?([^\\/&%]+)");
+        Matcher matcher = pattern.matcher(referer);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
     }
 }

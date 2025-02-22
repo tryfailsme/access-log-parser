@@ -16,11 +16,14 @@ public class Start {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Средний трафик за час: " + stats.getTrafficRate() + " байт/час");
-        System.out.println("Статистика операционных систем "+ stats.getFrequencyOS());
-        System.out.println("Статистика браузерных систем "+ stats.getFrequencyBrowsers());
-        System.out.println("Среднее посещений за час "+ stats.getAverageUsers());
-        System.out.println("Среднее ошибочных запросов за час "+ stats.getAverageErrors());
-        System.out.println("Средняя посещаемость "+ stats.getAveragePerUser());
+//        System.out.println("Средний трафик за час: " + stats.getTrafficRate() + " байт/час");
+//        System.out.println("Статистика операционных систем " + stats.getFrequencyOS());
+//        System.out.println("Статистика браузерных систем " + stats.getFrequencyBrowsers());
+//        System.out.println("Среднее посещений за час " + stats.getAverageUsers());
+//        System.out.println("Среднее ошибочных запросов за час " + stats.getAverageErrors());
+//        System.out.println("Средняя посещаемость " + stats.getAveragePerUser());
+        System.out.println("Пиковая посещаемости в сек: " + stats.getPeakSec());
+        System.out.println("Cписок сайтов рефереров: " + stats.getReferers());
+        System.out.println("Максимум посещений: " + stats.getMaxVisitsUser());
     }
 }
